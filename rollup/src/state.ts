@@ -1,6 +1,7 @@
 import { State } from "@stackr/sdk/machine";
 import { ZeroHash, solidityPackedKeccak256 } from "ethers";
 import { MerkleTree } from "merkletreejs";
+import { AnonAadhaarProof } from "./types";
 
 export type Leaves = {
   address: string;
@@ -10,6 +11,7 @@ export type Leaves = {
     address: string;
     amount: number;
   }[];
+  proof: AnonAadhaarProof[];
 }[];
 
 export class BetterMerkleTree {

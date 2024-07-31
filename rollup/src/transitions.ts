@@ -1,5 +1,7 @@
 import { Transitions, STF } from "@stackr/sdk/machine";
 import { ERC20, BetterMerkleTree as StateWrapper } from "./state";
+import { AnonAadhaarProof } from "./types";
+import { hash } from "@anon-aadhaar/core";
 
 // --------- Utilities ---------
 const findIndexOfAccount = (state: StateWrapper, address: string) => {
@@ -8,6 +10,7 @@ const findIndexOfAccount = (state: StateWrapper, address: string) => {
 
 type CreateInput = {
   address: string;
+  proof: AnonAadhaarProof;
 };
 
 type BaseActionInput = {
@@ -19,16 +22,44 @@ type BaseActionInput = {
 
 // --------- State Transition Handlers ---------
 const create: STF<ERC20, CreateInput> = {
-  handler: ({ inputs, state }) => {
-    const { address } = inputs;
+  handler: ({ inputs, state, msgSender }) => {
+    const { address, proof } = inputs;
     if (state.leaves.find((leaf) => leaf.address === address)) {
       throw new Error("Account already exists");
+    }
+    // TODO: Look for libraries which can verify a proof inside STF.
+    // IMO: ideally shouldn't be a bool, the verify function should be called here
+    // and if it gives true then the state should be updated.
+    if (proof.isVerified !== true) {
+      throw new Error("Proof verification is false");
+    }
+    // make sure the proof is sent by the respective msgSender
+    if (proof.signalHash !== hash(Number(msgSender))) {
+      throw new Error("Action is not sent by respective msgSender");
+    }
+    // access control statement
+    if (proof.ageAbove18 === "1") {
+      throw new Error("Access control condition did not met");
+    }
+    // time check
+    if (Number(proof.timestamp) <= Date.now() / 1000 - 5 * 60) {
+      throw new Error("Proof is expired");
+    }
+    // OPTIONAL
+    // make sure the proof is not used before, so that the user needs to create a proof for every action
+    if (
+      state.leaves.find((leaf) =>
+        leaf.proof.find((pro) => pro.nullifier === proof.nullifier)
+      )
+    ) {
+      throw new Error("Proof already used");
     }
     state.leaves.push({
       address,
       balance: 0,
       nonce: 0,
       allowances: [],
+      proof: [proof],
     });
     return state;
   },
