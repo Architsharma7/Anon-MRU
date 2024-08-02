@@ -17,5 +17,5 @@ export type AnonAadhaarProof = {
   gender: string;
   pincode: string;
   state: string;
-  isVerified: boolean
+  isVerified: boolean;
 };

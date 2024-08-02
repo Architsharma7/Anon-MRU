@@ -18,9 +18,12 @@ export default function Home() {
   const { address } = useAccount();
   const [isVerified, setIsVerified] = useState(false);
   const [proof, setProof] = useState<AnonAadhaarProoftype>();
+  const [wallet, setWallet] = useState(null)
 
   console.log("Anon Aadhaar: ", latestProof);
   console.log(address);
+  console.log(proof);
+  console.log(isVerified);
 
   useEffect(() => {
     console.log("Anon Aadhaar status: ", anonAadhaar.status);

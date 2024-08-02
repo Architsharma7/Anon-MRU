@@ -21,7 +21,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>
-          <AnonAadhaarProvider _useTestAadhaar={true}>
+          <AnonAadhaarProvider>
             <Component {...pageProps} />
           </AnonAadhaarProvider>
         </RainbowKitProvider>

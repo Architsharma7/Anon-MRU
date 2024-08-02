@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { schemas } from "./actions.ts";
 import { ERC20Machine, mru } from "./erc20.ts";
 import { transitions } from "./transitions.ts";
+import cors from "cors";
 
 console.log("Starting server...");
 dotenv.config();
@@ -14,6 +15,7 @@ const erc20Machine = mru.stateMachines.get<ERC20Machine>("erc-20");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 if (process.env.NODE_ENV === "development") {
   const playground = Playground.init(mru);
@@ -78,6 +80,15 @@ app.post("/:reducerName", async (req: Request, res: Response) => {
     res.status(400).send({ error: e.message });
   }
   return;
+});
+
+type ActionName = keyof typeof schemas;
+
+app.get("/getEIP712Types/:action", (_req: Request, res: Response) => {
+  //@ts-ignore
+  const { action }: { action: ActionName } = _req.params;
+  const eip712Types = schemas[action].EIP712TypedData.types;
+  return res.send({ eip712Types });
 });
 
 app.get("/", (_req: Request, res: Response) => {

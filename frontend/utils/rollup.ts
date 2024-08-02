@@ -16,6 +16,8 @@ const domain = {
 
 export const create = async (data: createType) => {
   const actionName = "create";
+
+  // TODO: replace with actual wallet
   const wallet = Wallet.createRandom();
 
   try {
@@ -32,12 +34,14 @@ export const create = async (data: createType) => {
     };
 
     const signature = await wallet._signTypedData(domain, eip712Types, inputs);
+    console.log("signature", signature)
 
     const body = JSON.stringify({
       msgSender: data.address,
       signature,
       inputs,
     });
+    console.log("body", body);
 
     const res = await fetch(`http://localhost:3000/${actionName}`, {
       method: "POST",
@@ -46,6 +50,7 @@ export const create = async (data: createType) => {
         "Content-Type": "application/json",
       },
     });
+    console.log(res);
 
     const json = await res.json();
     console.log(`Response: ${JSON.stringify(json, null, 2)}`);
